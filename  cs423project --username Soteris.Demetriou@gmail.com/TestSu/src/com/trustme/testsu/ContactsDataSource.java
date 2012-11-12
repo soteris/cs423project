@@ -8,17 +8,24 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 public class ContactsDataSource {
+	private final String TAG = "ContactsDataSource";
 	private SQLiteDatabase database;
 	private DatabaseOpenHelper dbHelper;
 	
 	public ContactsDataSource(Context context) {
 	    dbHelper = new DatabaseOpenHelper(context);
+	    if (dbHelper != null)
+	    {
+	    	Log.i(TAG, "Database object returned");
+	    }
 	  }
 
-	  public void open() throws SQLException {
+	  public SQLiteDatabase open() throws SQLException {
 	    database = dbHelper.getWritableDatabase();
+	    return database;
 	  }
 
 	  public void close() {

@@ -47,7 +47,10 @@ public class IpCheck extends Thread{
 				Log.e(TAG, "Looper stopped due to an error", t);
 			}
 	}
-
+	
+	/**
+	 * This function reads proc/net/arp in search for an IP address
+	 */
 	protected void read_arp() {
 		// read arp
 		// if ip exists and new data available send intent to exfiltrate

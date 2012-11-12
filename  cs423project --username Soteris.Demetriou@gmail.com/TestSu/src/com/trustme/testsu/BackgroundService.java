@@ -39,12 +39,18 @@ public class BackgroundService extends Service{
 		Log.i(TAG, "onCreate");
 	}
 	
+	/**
+	 * It starts the Looper Thread that checks for the IP
+	 */
 	private void startReader(){
 			new IpCheck().start();
 			handlerIpCheck.removeCallbacks(readARP);
 	        handlerIpCheck.postDelayed(readARP, DELAY);
 	}
 	
+	/**
+	 * It stops the Looper Thread that checks for the IP
+	 */
 	private void stopReader(){
 			// TODO (xzhou) stop network logger thread here. 
 			handlerIpCheck.removeCallbacks(readARP);
@@ -66,7 +72,7 @@ public class BackgroundService extends Service{
 	
 	 /**
      * Runnable that a handler triggers every time INTERVAL to 
-     * start the NetThread that monitor NetPackages of proc_name
+     * start the IpCheck Thread that checks the arp file for an IP address
      */
 	private Runnable readARP = new Runnable() 
 	{

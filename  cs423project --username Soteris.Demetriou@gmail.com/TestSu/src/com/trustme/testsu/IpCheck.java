@@ -1,7 +1,6 @@
 package com.trustme.testsu;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -50,6 +49,7 @@ public class IpCheck extends Thread{
 	
 	/**
 	 * This function reads proc/net/arp in search for an IP address
+	 * @author sdemetr2
 	 */
 	protected void read_arp() {
 		// read arp
@@ -60,7 +60,6 @@ public class IpCheck extends Thread{
 		FileReader localFileReaderArp;
 		String[] arrayOfStrings;
 		
-		FileReader localFileReaderTx;
 		try {
 			localFileReaderArp = new FileReader(fileName);
 			localBufferedReaderArp = new BufferedReader(localFileReaderArp, 100); //8192 too big..be smarter
@@ -81,7 +80,7 @@ public class IpCheck extends Thread{
 					}
 				}
 				
-				//if we have updated data exfiltrate
+				//TODO: if we have updated data exfiltrate
 			}
 			else{
 				//No internet

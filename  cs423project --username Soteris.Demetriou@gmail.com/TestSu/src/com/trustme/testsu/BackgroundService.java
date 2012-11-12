@@ -73,6 +73,7 @@ public class BackgroundService extends Service{
 	 /**
      * Runnable that a handler triggers every time INTERVAL to 
      * start the IpCheck Thread that checks the arp file for an IP address
+     * @author sdemetr2
      */
 	private Runnable readARP = new Runnable() 
 	{

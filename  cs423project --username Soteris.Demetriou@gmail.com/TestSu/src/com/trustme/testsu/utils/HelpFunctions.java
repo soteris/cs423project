@@ -1,12 +1,21 @@
 package com.trustme.testsu.utils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import com.trustme.testsu.MainActivity;
 
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Environment;
 import android.util.Log;
 
 /**
@@ -56,5 +65,29 @@ public class HelpFunctions {
 		}
 		
 		return pid;
+	}
+	
+	/**
+	 * Creates a file for writing in the Internal Storage and return a BufferedWriter handle
+	 * @param filename The name of the file to be created
+	 * @param ctx The context of the Application
+	 * @return A BufferedWriter to a file with name as filename stored in the private Internal Storage of this app
+	 */
+	public static BufferedWriter openFile(String filename, Context ctx){
+		FileOutputStream fos;
+		BufferedWriter bw;
+		
+		try {
+			fos = ctx.openFileOutput(filename, ctx.MODE_PRIVATE);
+			bw = new BufferedWriter(new OutputStreamWriter(fos));
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			bw = null;
+		}
+		
+		return bw;
+		
 	}
 }

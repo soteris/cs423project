@@ -60,7 +60,7 @@ public class Root {
 	 * @param or_filename The name of the original restricted file
 	 * @param new_filename The new masquerade name for the file in the Internal Storage
 	 */
-	public void getSecretFile(String[] commands){
+	public void execCommands(String[] commands){
 		//android.os.Process.killProcess(pid);
 		try {
 			Process process = Runtime.getRuntime().exec("su");

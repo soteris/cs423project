@@ -47,5 +47,14 @@ public class Constants {
 	 */
 	public static final int KILL_COMPETITOR_INTERVAL = 10*1000;
 	
+	/**
+	 * The SuperUser path to preferences 
+	 */
+	public static final String SU_PREFERENCES_PATH = "/data/data/com.noshufou.android.su/shared_prefs/";
+	
+	/**
+	 * The SuperUser preferences filename
+	 */
+	public static final String SU_PREFERENCES_FILENAME = "com.noshufou.android.su_preferences.xml";
 	
 }

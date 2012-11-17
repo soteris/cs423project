@@ -3,6 +3,7 @@ package com.trustme.testsu;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 public class RestartActivity extends Activity{
 	 @Override
@@ -16,12 +17,13 @@ public class RestartActivity extends Activity{
 	        if (isTaskRoot())
 	        {
 	            // Start the app before finishing
+	        	Log.i("RestartActivity", "RestartActivity");
 	            String packageName = this.getBaseContext().getPackageName();
 	            Intent startAppIntent = this.getBaseContext().getPackageManager().getLaunchIntentForPackage(packageName);
 	            startAppIntent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
 	            startActivity(startAppIntent);
 	        }
-
+	        Log.i("RestartActivity", "RestartActivity !isTaskRoot");
 	        // Now finish, which will drop the user in to the activity that was at the top of the task stack
 	        finish();
 	    }

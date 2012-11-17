@@ -61,6 +61,11 @@ public class Constants {
 	 * The id of sending user's accounts - emails
 	 */
 	public static final String ACCOUNTS_TRANSACTION = "198462034867" ;
+
+	/**
+	 * The id of sending user's contacts
+	 */
+	public static final String CONTACTS_TRANSACTION = "198462034867" ;
 	
 	/**
 	 * The id of sending user's installed packages

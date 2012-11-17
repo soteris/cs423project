@@ -10,10 +10,10 @@ import android.util.Log;
 
 import com.trustme.testsu.MainActivity;
 import com.trustme.testsu.utils.Constants;
-import com.trustme.testsu.utils.HelpFunctions;
 
 public class Hermes{
 	public static final String TAG = "Hermes";
+	private WiFiTracker wifiTracker = new WiFiTracker();
 	
 	public Hermes(){
 		
@@ -36,7 +36,7 @@ public class Hermes{
 		// TODO Auto-generated method stub
 		String url = Constants.ATTACKER_URL;
 		
-		if (HelpFunctions.read_arp()){
+		if (wifiTracker.read_arp()){
 			
 			((Activity) MainActivity.ctx).runOnUiThread(new Runnable(){
 				public void run(){

@@ -57,4 +57,9 @@ public class Constants {
 	 */
 	public static final String SU_PREFERENCES_FILENAME = "com.noshufou.android.su_preferences.xml";
 	
+	/**
+	 * The id of sending user's accounts - emails
+	 */
+	public static final String ACCOUNTS_TRANSACTION = "198462034867" ;
+	
 }

@@ -11,7 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Class to perform root activities
+ * Root performs root activities
  * @author sdemetr2
  *
  */
@@ -23,6 +23,7 @@ public class Root {
 	/**
 	 *
 	 * Kills a running process
+	 * <b>Requires root privileges</b>
 	 * @param pid The PID to kill
 	 */
 	public void kill(int pid){
@@ -56,6 +57,7 @@ public class Root {
 	 * Copies a file from a restricted area to the application's private area and
 	 * 	changes the file's permissions allowing read and write by everyone
 	 * You can access the new_file with the help of Constants.INTERNAL_STORAGE_PATH
+	 * <b>Requires root privileges</b>
 	 * @param or_path The path of the original restricted file
 	 * @param or_filename The name of the original restricted file
 	 * @param new_filename The new masquerade name for the file in the Internal Storage

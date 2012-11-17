@@ -1,21 +1,13 @@
 package com.trustme.testsu;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Handler.Callback;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
-import android.os.SystemClock;
 import android.util.Log;
 
 
@@ -61,10 +53,10 @@ public class BackgroundService extends Service{
 	public int onStartCommand(Intent intent, int flags, int startId){
 		int cmd = intent.getExtras().getInt("CMD");
 		Log.i(TAG, "onStartCommand: " + cmd);
-		if(cmd == MainActivity.START_IP_CHECK){
+		if(cmd == WiFiTracker.START_IP_CHECK){
 			Log.i(TAG, "xxxx");
 			startReader();
-		}else if (cmd == MainActivity.STOP_IP_CHECK){
+		}else if (cmd == WiFiTracker.STOP_IP_CHECK){
 			stopReader();
 		}
 		return START_NOT_STICKY;

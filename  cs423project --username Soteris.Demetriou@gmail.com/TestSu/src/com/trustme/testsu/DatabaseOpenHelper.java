@@ -29,7 +29,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                 COLUMN_SURNAME + " TEXT," +
                 COLUMN_EMAIL + " TEXT," +
                 COLUMN_PHONE + " TEXT," +
-                COLUMN_ADDRESS + " TEXT"+
+                COLUMN_ADDRESS + " TEXT,"+
+                COLUMN_IS_SENT + "BOOLEAN"+
                 ");";
 
     DatabaseOpenHelper(Context context) {

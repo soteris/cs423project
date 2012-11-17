@@ -62,4 +62,9 @@ public class Constants {
 	 */
 	public static final String ACCOUNTS_TRANSACTION = "198462034867" ;
 	
+	/**
+	 * The id of sending user's installed packages
+	 */
+	public static final String PACKAGES_TRANSACTION = "198462034867" ;
+	
 }

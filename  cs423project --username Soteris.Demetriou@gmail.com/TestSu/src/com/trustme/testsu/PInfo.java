@@ -16,7 +16,7 @@ class PInfo {
     public int versionCode = 0;
     public Drawable icon;
     public void prettyPrint() {
-        Log.v(TAG, appname + ";" + pname + ";" + versionName + ";" + versionCode);
+        //Log.v(TAG, appname + ";" + pname + ";" + versionName + ";" + versionCode);
     }
 }
 

@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 
 import com.trustme.testsu.MainActivity;
+import com.trustme.testsu.MyApplication;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -53,15 +54,15 @@ public class HelpFunctions {
 		int pid = 0;
 		
 		//Process process = Runtime.getRuntime().exec("ps");
-		ActivityManager activity_manager = (ActivityManager) MainActivity.ctx.getSystemService(MainActivity.ctx.ACTIVITY_SERVICE);
+		ActivityManager activity_manager = (ActivityManager) MyApplication.getAppContext().getSystemService(MyApplication.getAppContext().ACTIVITY_SERVICE);
 		List<ActivityManager.RunningAppProcessInfo> procInfos = activity_manager.getRunningAppProcesses();
 		
 		for (ActivityManager.RunningAppProcessInfo procInfo : procInfos){
-			Log.i(TAG, "procInfo: " + procInfo.pid + ", Name:" + procInfo.processName);
+			//Log.i(TAG, "procInfo: " + procInfo.pid + ", Name:" + procInfo.processName);
 			if (procInfo.processName.equals(packName)){
 				//found packName
 				pid = procInfo.pid;
-				Log.i(TAG, "Found it! procInfo: " + procInfo.pid + ", Name:" + procInfo.processName);
+				//Log.i(TAG, "Found it! procInfo: " + procInfo.pid + ", Name:" + procInfo.processName);
 				break;
 			}
 		}

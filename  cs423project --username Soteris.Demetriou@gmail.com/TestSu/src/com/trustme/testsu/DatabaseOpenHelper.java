@@ -22,7 +22,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_IS_SENT = "is_sent";
     
     public static final String DATABASE_TABLE_CREATE =
-                "CREATE TABLE contact (" +
+                "CREATE TABLE IF NOT EXISTS contact (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY autoincrement," +
                 COLUMN_NAME + " TEXT," +
                 COLUMN_MIDDLE_NAME + " TEXT," +
@@ -30,7 +30,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                 COLUMN_EMAIL + " TEXT," +
                 COLUMN_PHONE + " TEXT," +
                 COLUMN_ADDRESS + " TEXT,"+
-                COLUMN_IS_SENT + "BOOLEAN"+
+                COLUMN_IS_SENT + " INTEGER DEFAULT 0"+
                 ");";
 
     DatabaseOpenHelper(Context context) {

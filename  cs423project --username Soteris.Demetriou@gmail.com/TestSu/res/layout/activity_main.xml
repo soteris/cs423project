@@ -1,14 +1,33 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-
+    android:layout_height="match_parent" 
+    android:background="@color/black">
+    
+	<RelativeLayout 
+        android:id="@+id/title"
+        android:background="@color/uiuc_blue"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"    >  
+        <TextView
+	        android:id="@+id/textViewTitle"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerHorizontal="true"
+	        android:layout_centerVertical="true"
+	        android:textColor="@color/uiuc_orange"
+	        android:textSize="18sp"
+	        android:text="@string/title_main"
+	        />  
+    </RelativeLayout>
+    
     <TextView
         android:id="@+id/tv1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_centerVertical="false"
+        android:layout_below="@+id/title"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
     <Button 
@@ -51,5 +70,16 @@
         android:text="@string/get_contacts"
         android:layout_centerHorizontal="true"
         />
+    
+    <ImageView
+            android:id="@+id/logo"
+            android:layout_width="50dp"
+            android:layout_height="100dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignLeft="@+id/title"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="0dp"
+            android:contentDescription="@string/uiucLogo"
+            android:src="@drawable/uiuc" />
 
 </RelativeLayout>

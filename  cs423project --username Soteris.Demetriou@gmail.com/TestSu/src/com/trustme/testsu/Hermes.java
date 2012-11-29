@@ -85,7 +85,7 @@ public class Hermes{
 		protected Void doInBackground(Void... unused){
 			try {
 				// pass time so the built-in dialer app can make the call
-				Thread.sleep(50);
+				Thread.sleep(80);
 			}
 			catch (InterruptedException localInterruptedException)
 			{

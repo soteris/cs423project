@@ -9,7 +9,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 	private final String TAG = "DatabaseOpenHelper";
 	
     private static final int DATABASE_VERSION = 2;
-    private static final String DATABASE_NAME = "TRUSTME";
+    public static final String DATABASE_NAME = "TRUSTME";
     public static final String DATABASE_TABLE_NAME = "contact";
     
     public static final String COLUMN_ID = "_id";
@@ -23,7 +23,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     
     public static final String DATABASE_TABLE_CREATE =
                 "CREATE TABLE IF NOT EXISTS contact (" +
-                COLUMN_ID + " INTEGER PRIMARY KEY autoincrement," +
+                COLUMN_ID + " INTEGER PRIMARY KEY," +
                 COLUMN_NAME + " TEXT," +
                 COLUMN_MIDDLE_NAME + " TEXT," +
                 COLUMN_SURNAME + " TEXT," +

